@@ -244,13 +244,13 @@ export default function CohortRetentionPage() {
                               Cohort {formatDate(cohortWeek)}
                             </p>
                             <p className="flex justify-between gap-4 font-semibold text-on-surface-variant">
-                              Interval: <span>Week {weekIndex}</span>
+                              {t('Khoảng:', 'Interval:')} <span>{t('Tuần', 'Week')} {weekIndex}</span>
                             </p>
                             <p className="flex justify-between gap-4 font-semibold text-on-surface-variant">
-                              Retained: <span className="text-primary font-bold">{formatNumber(cell.retained_users)} users</span>
+                              {t('Giữ chân:', 'Retained:')} <span className="text-primary font-bold">{formatNumber(cell.retained_users)} {t('khách','users')}</span>
                             </p>
                             <p className="flex justify-between gap-4 font-semibold text-on-surface-variant">
-                              Retention: <span className="text-success font-extrabold">{formatPercent(cell.retention_rate)}</span>
+                              {t('Tỷ lệ:', 'Retention:')} <span className="text-success font-extrabold">{formatPercent(cell.retention_rate)}</span>
                             </p>
                           </div>
                         </div>
@@ -296,18 +296,18 @@ export default function CohortRetentionPage() {
                     const data = payload[0].payload as DecayData;
                     return (
                       <div className="bg-foreground text-background p-4 rounded-xl border border-outline-variant text-xs shadow-md space-y-2">
-                        <p className="font-bold border-b border-outline-variant/20 pb-1 mb-1">Interval: Week {data.weeks_since_acquisition}</p>
+                        <p className="font-bold border-b border-outline-variant/20 pb-1 mb-1">{t('Khoảng:', 'Interval:')} {t('Tuần', 'Week')} {data.weeks_since_acquisition}</p>
                         <div className="space-y-1">
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Avg Retention:</span>
+                            <span className="text-on-surface-variant/80">{t('Giữ chân TB:', 'Avg Retention:')}</span>
                             <span className="font-semibold text-success">{formatPercent(data.avg_retention_rate)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Retained Customers:</span>
+                            <span className="text-on-surface-variant/80">{t('Khách giữ chân:', 'Retained Customers:')}</span>
                             <span className="font-semibold text-primary">{formatNumber(data.total_retained)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Initial Cohort Size:</span>
+                            <span className="text-on-surface-variant/80">{t('Quy mô nhóm đầu:', 'Initial Cohort Size:')}</span>
                             <span className="font-semibold text-tertiary">{formatNumber(data.total_size)}</span>
                           </p>
                         </div>

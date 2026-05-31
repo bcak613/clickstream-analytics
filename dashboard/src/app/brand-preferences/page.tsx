@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDuckDB } from '@/components/providers/DuckDBProvider';
+import { useLang } from '@/components/providers/LangProvider';
 import { ContentCard } from '@/components/cards/ContentCard';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { ErrorCard } from '@/components/ui/ErrorCard';
@@ -26,6 +27,7 @@ type SortOrder = 'asc' | 'desc';
 
 export default function BrandPreferencesPage() {
   const { loading, error, query } = useDuckDB();
+  const { t } = useLang();
   const [brands, setBrands] = useState<BrandData[]>([]);
   const [metric, setMetric] = useState<'total_revenue' | 'purchase_count' | 'avg_price'>('total_revenue');
   const [queryError, setQueryError] = useState<string | null>(null);
@@ -35,6 +37,7 @@ export default function BrandPreferencesPage() {
   // Sort State
   const [sortField, setSortField] = useState<SortField>('total_revenue');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
 
   useEffect(() => {
     setIsClient(true);
@@ -165,9 +168,9 @@ export default function BrandPreferencesPage() {
   };
 
   const getMetricLabel = () => {
-    if (metric === 'total_revenue') return 'Total Revenue';
-    if (metric === 'purchase_count') return 'Units Sold';
-    return 'Avg Order Value';
+    if (metric === 'total_revenue') return t('Tổng Doanh thu', 'Total Revenue');
+    if (metric === 'purchase_count') return t('Số lượng Bán', 'Units Sold');
+    return t('Giá Đơn trung bình', 'Avg Order Value');
   };
 
   const formatMetricValue = (val: number) => {
@@ -181,10 +184,10 @@ export default function BrandPreferencesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-on-surface">
-            Brand Market Preferences
+            {t('Thị hiếu Thương hiệu', 'Brand Market Preferences')}
           </h1>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            Compare brand revenues, sales volumes, average order sizes, and customer checkout conversion metrics.
+            {t('So sánh doanh thu, lượt mua, giá trung bình và tỷ lệ chuyển đổi của các thương hiệu.', 'Compare brand revenues, sales volumes, average order sizes, and customer checkout conversion metrics.')}
           </p>
         </div>
 
@@ -198,7 +201,7 @@ export default function BrandPreferencesPage() {
                 : 'text-on-surface-variant hover:bg-surface-container'
             }`}
           >
-            Revenue
+            {t('Doanh thu', 'Revenue')}
           </button>
           <button
             onClick={() => setMetric('purchase_count')}
@@ -208,7 +211,7 @@ export default function BrandPreferencesPage() {
                 : 'text-on-surface-variant hover:bg-surface-container'
             }`}
           >
-            Units Sold
+            {t('Số lượng Bán', 'Units Sold')}
           </button>
           <button
             onClick={() => setMetric('avg_price')}
@@ -218,15 +221,15 @@ export default function BrandPreferencesPage() {
                 : 'text-on-surface-variant hover:bg-surface-container'
             }`}
           >
-            Avg Price
+            {t('Giá TB', 'Avg Price')}
           </button>
         </div>
       </div>
 
       {/* Grouped Bar Chart of Top 10 Brands */}
       <ContentCard
-        title={`Top 10 Market Leaders by ${getMetricLabel()}`}
-        subtitle="Highlighted comparison model for major consumer tech brands (Apple, Samsung, Xiaomi)"
+        title={t(`Top 10 Thương hiệu dẫn đầu theo ${getMetricLabel()}`, `Top 10 Market Leaders by ${getMetricLabel()}`)}
+        subtitle={t('So sánh nổi bật các thương hiệu điện tử tiêu dùng lớn (Apple, Samsung, Xiaomi)', 'Highlighted comparison model for major consumer tech brands (Apple, Samsung, Xiaomi)')}
       >
         <div className="h-[320px] w-full mt-2">
           <ResponsiveContainer width="100%" height="100%">
@@ -254,19 +257,19 @@ export default function BrandPreferencesPage() {
                         <p className="font-bold border-b border-outline-variant/20 pb-1 mb-1 uppercase tracking-wide">{data.brand}</p>
                         <div className="space-y-1">
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Total Revenue:</span>
+                            <span className="text-on-surface-variant/80">{t('Tổng Doanh thu:', 'Total Revenue:')}</span>
                             <span className="font-semibold text-primary">{formatCurrency(data.total_revenue)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Units Sold:</span>
+                            <span className="text-on-surface-variant/80">{t('Số lượng Bán:', 'Units Sold:')}</span>
                             <span className="font-semibold text-tertiary">{formatNumber(data.purchase_count)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Avg Price:</span>
+                            <span className="text-on-surface-variant/80">{t('Giá trung bình:', 'Avg Price:')}</span>
                             <span className="font-semibold">{formatCurrency(data.avg_price)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Conversion:</span>
+                            <span className="text-on-surface-variant/80">{t('Tỷ lệ chuyển đổi:', 'Conversion:')}</span>
                             <span className="font-semibold text-success">{formatPercent(data.conversion_rate)}</span>
                           </p>
                         </div>
@@ -307,7 +310,7 @@ export default function BrandPreferencesPage() {
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#DFDFD9]"></span>
-            <span>Other Brands</span>
+            <span>{t('Thương hiệu khác', 'Other Brands')}</span>
           </div>
         </div>
         {/* Dynamic insight based on selected metric */}
@@ -324,13 +327,25 @@ export default function BrandPreferencesPage() {
               <InsightCallout insights={[
                 {
                   type: 'insight' as const,
-                  title: `${topBrand.brand} leads average order value at ${formatCurrency(topBrand.avg_price)} — but is NOT a consumer tech giant`,
-                  body: `When sorted by Avg Price, niche premium brands (professional audio, luxury watches, German appliances) outrank Apple/Samsung/Xiaomi. Consumer tech brands sell across all price tiers, diluting their average. ${bigThreeInTop10 === 0 ? 'None of the Big 3 appear in top 10 avg price — they compete on volume, not AOV.' : `Only ${bigThreeInTop10} of the Big 3 appear here.`} Strategy: negotiate higher shelf placement fees with premium niche brands as they drive higher AOV and margin.`
+                  title: t(
+                    `${topBrand.brand} dẫn đầu giá đơn trung bình ${formatCurrency(topBrand.avg_price)} — nhưng KHÔNG phải điện tử tiêu dùng lớn`,
+                    `${topBrand.brand} leads average order value at ${formatCurrency(topBrand.avg_price)} — but is NOT a consumer tech giant`
+                  ),
+                  body: t(
+                    `Khi sắp xếp theo Giá TB, các thương hiệu cao cấp ngách (audio chuyên nghiệp, đồng hồ xa xỉ) vượt Apple/Samsung/Xiaomi. ${bigThreeInTop10 === 0 ? 'Không có Big 3 nào trong top 10 giá TB — họ cạnh tranh bằng volume, không phải AOV.' : `Chỉ ${bigThreeInTop10} trong 3 hãng lớn xuất hiện ở đây.`} Chiến lược: đàm phán phí ưu tiên đối với thương hiệu ngách cao cấp.`,
+                    `When sorted by Avg Price, niche premium brands (professional audio, luxury watches, German appliances) outrank Apple/Samsung/Xiaomi. ${bigThreeInTop10 === 0 ? 'None of the Big 3 appear in top 10 avg price — they compete on volume, not AOV.' : `Only ${bigThreeInTop10} of the Big 3 appear here.`} Strategy: negotiate higher shelf placement fees with premium niche brands as they drive higher AOV and margin.`
+                  )
                 },
                 {
                   type: 'strategy' as const,
-                  title: 'Strategy: Create a “Premium Picks” curated category',
-                  body: 'Bundle these high-AOV brands into a "Premium" or "Professional Grade" storefront section. Customers spending $1,800+ per order are high-LTV segments — invest in white-glove onboarding and extended warranty upsells to maximize revenue per user.'
+                  title: t(
+                    'Chiến lược: Tạo danh mục “Sản phẩm Cao cấp” riêng biệt',
+                    'Strategy: Create a "Premium Picks" curated category'
+                  ),
+                  body: t(
+                    'Góp nhóm các thương hiệu AOV cao vào mục “Cao cấp” trên giao diện. Khách hàng chi 1.800 USD+/đơn là nhóm LTV cao — đầu tư vào tư vấn 1-1 và upsell bảo hành mở rộng.',
+                    'Bundle these high-AOV brands into a "Premium" or "Professional Grade" storefront section. Customers spending $1,800+ per order are high-LTV segments — invest in white-glove onboarding and extended warranty upsells to maximize revenue per user.'
+                  )
                 }
               ]} />
             );
@@ -341,13 +356,25 @@ export default function BrandPreferencesPage() {
               <InsightCallout insights={[
                 {
                   type: 'insight' as const,
-                  title: `${topBrand.brand} is the top revenue contributor${appleData && appleRank > 0 ? ` — Apple ranks #${appleRank} overall` : ''}`,
-                  body: `Revenue concentration risk: if the top 3 brands account for >50% of total revenue, the business is over-reliant on few supplier relationships. Validate gross margin per brand — high-revenue brands may have lower margins due to negotiated bulk discounts.`
+                  title: t(
+                    `${topBrand.brand} dẫn đầu doanh thu${appleData && appleRank > 0 ? ` — Apple xếp hạng #${appleRank} toàn bảng` : ''}`,
+                    `${topBrand.brand} is the top revenue contributor${appleData && appleRank > 0 ? ` — Apple ranks #${appleRank} overall` : ''}`
+                  ),
+                  body: t(
+                    'Rủi ro tập trung doanh thu: nếu top 3 thương hiệu chiếm >50% tổng doanh thu, doanh nghiệp phụ thuộc quá mức vào vài nhà cung cấp. Kiểm tra biên lợi nhuận thực theo thương hiệu.',
+                    'Revenue concentration risk: if the top 3 brands account for >50% of total revenue, the business is over-reliant on few supplier relationships. Validate gross margin per brand — high-revenue brands may have lower margins due to negotiated bulk discounts.'
+                  )
                 },
                 {
                   type: 'strategy' as const,
-                  title: 'Strategy: Cross-reference conversion rate vs revenue rank',
-                  body: 'Switch to the table below and sort by Conversion %. Brands that convert well but rank low in revenue are under-marketed — increase their Product Detail Page traffic via sponsored placement or homepage feature slots.'
+                  title: t(
+                    'Chiến lược: Đối chiếu tỷ lệ chuyển đổi với thứ hạng doanh thu',
+                    'Strategy: Cross-reference conversion rate vs revenue rank'
+                  ),
+                  body: t(
+                    'Chuyển sang bảng bên dưới, sắp xếp theo % Chuyển đổi. Thương hiệu có tỷ lệ chuyển đổi cao nhưng doanh thu thấp — đang thiếu marketing, cần tăng slot quảng bá trang chủ.',
+                    'Switch to the table below and sort by Conversion %. Brands that convert well but rank low in revenue are under-marketed — increase their Product Detail Page traffic via sponsored placement or homepage feature slots.'
+                  )
                 }
               ]} />
             );
@@ -356,8 +383,14 @@ export default function BrandPreferencesPage() {
             <InsightCallout insights={[
               {
                 type: 'insight' as const,
-                title: `${topBrand.brand} dominates unit volume — compare with Revenue view to spot margin gaps`,
-                body: `High unit count with low revenue rank signals lower-priced items or discount-driven sales. ${samsungData && appleData ? 'Samsung typically outsells Apple on unit count (accessories, mid-range devices) while Apple drives higher revenue per transaction.' : 'Switch to Revenue view to compare AOV gaps across the top sellers.'}`
+                title: t(
+                  `${topBrand.brand} dẫn đầu số lượng bán — so sánh với Doanh thu để phát hiện chênh lệch biên lợi`,
+                  `${topBrand.brand} dominates unit volume — compare with Revenue view to spot margin gaps`
+                ),
+                body: t(
+                  `Số lượng cao nhưng doanh thu thấp = sản phẩm giá rẻ hoặc sale discount. ${samsungData && appleData ? 'Samsung thường bán được nhiều đơn hơn Apple (phụ kiện, thiết bị tầm trung), trong khi Apple tạo doanh thu cao hơn mỗi giao dịch.' : 'Chuyển sang view Doanh thu để so sánh AOV các thương hiệu.'}`,
+                  `High unit count with low revenue rank signals lower-priced items or discount-driven sales. ${samsungData && appleData ? 'Samsung typically outsells Apple on unit count (accessories, mid-range devices) while Apple drives higher revenue per transaction.' : 'Switch to Revenue view to compare AOV gaps across the top sellers.'}`
+                )
               }
             ]} />
           );
@@ -366,30 +399,30 @@ export default function BrandPreferencesPage() {
 
       {/* Sortable Brand Conversion Grid Table */}
       <ContentCard
-        title="Brand Conversion Metrics Table"
-        subtitle="Complete performance breakdown across every registered brand (Click columns to sort)"
+        title={t('Bảng Chỉ số Chuyển đổi Thương hiệu', 'Brand Conversion Metrics Table')}
+        subtitle={t('Số liệu đầy đủ toàn bộ thương hiệu (click tên cột để sắp xếp)', 'Complete performance breakdown across every registered brand (Click columns to sort)')}
       >
         <div className="w-full mt-2 overflow-hidden border border-outline-variant rounded-xl bg-surface-container-lowest">
           
           {/* Table Header (CSS Grid) */}
           <div className="grid grid-cols-6 gap-4 px-6 py-3 border-b border-outline-variant bg-surface-container-low text-[11px] font-bold uppercase tracking-wider text-on-surface-variant select-none">
             <div className="col-span-1 flex items-center cursor-pointer" onClick={() => handleSort('brand')}>
-              Brand {getSortIcon('brand')}
+              {t('Thương hiệu', 'Brand')} {getSortIcon('brand')}
             </div>
             <div className="col-span-1 flex items-center justify-end cursor-pointer" onClick={() => handleSort('view_count')}>
-              Views {getSortIcon('view_count')}
+              {t('Lượt xem', 'Views')} {getSortIcon('view_count')}
             </div>
             <div className="col-span-1 flex items-center justify-end cursor-pointer" onClick={() => handleSort('cart_count')}>
-              Carts {getSortIcon('cart_count')}
+              {t('Giỏ hàng', 'Carts')} {getSortIcon('cart_count')}
             </div>
             <div className="col-span-1 flex items-center justify-end cursor-pointer" onClick={() => handleSort('purchase_count')}>
-              Purchases {getSortIcon('purchase_count')}
+              {t('Mua hàng', 'Purchases')} {getSortIcon('purchase_count')}
             </div>
             <div className="col-span-1 flex items-center justify-end cursor-pointer" onClick={() => handleSort('total_revenue')}>
-              Revenue {getSortIcon('total_revenue')}
+              {t('Doanh thu', 'Revenue')} {getSortIcon('total_revenue')}
             </div>
             <div className="col-span-1 flex items-center justify-end cursor-pointer" onClick={() => handleSort('conversion_rate')}>
-              Conversion % {getSortIcon('conversion_rate')}
+              {t('Chuyển đổi %', 'Conversion %')} {getSortIcon('conversion_rate')}
             </div>
           </div>
 
