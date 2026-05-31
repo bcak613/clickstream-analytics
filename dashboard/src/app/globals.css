@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAF5;
+  --foreground: #1C1B1A;
+  
+  /* Core Tonal Surface System variables */
+  --surface: #FAFAF5;
+  --surface-dim: #EAEAE5;
+  --surface-container-lowest: #F5F5F0;
+  --surface-container-low: #F0F0EB;
+  --surface-container: #EBEBE6;
+  --surface-container-high: #E5E5E0;
+  --surface-container-highest: #DFDFD9;
+  
+  --on-surface: #1C1B1A;
+  --on-surface-variant: #49454F;
+  --outline: #7A7574;
+  --outline-variant: rgba(73, 69, 79, 0.10);
+  
+  --primary: #2D6A4F;
+  --on-primary: #FFFFFF;
+  --primary-container: rgba(45, 106, 79, 0.15);
+  --on-primary-container: #1B4332;
+  
+  --secondary: #4A6741;
+  --on-secondary: #FFFFFF;
+  --secondary-container: rgba(74, 103, 65, 0.12);
+  --on-secondary-container: #2D4228;
+  
+  --tertiary: #4A90D9;
+  --on-tertiary: #FFFFFF;
+  --tertiary-container: rgba(74, 144, 217, 0.12);
+  --on-tertiary-container: #1A3A5C;
+  
+  --success: #2E7D32;
+  --success-container: rgba(46, 125, 50, 0.10);
+  --error: #C62828;
+  --error-container: rgba(198, 40, 40, 0.10);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  /* Custom Tailwind v4 Color Token Mappings */
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  
+  --color-success: var(--success);
+  --color-success-container: var(--success-container);
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  
+  /* Chart Colors */
+  --color-chart-1: #2D6A4F;
+  --color-chart-2: #4A90D9;
+  --color-chart-3: #E8A317;
+  --color-chart-4: #8B5CF6;
+  --color-chart-5: #EC4899;
+  --color-chart-6: #14B8A6;
+  --color-chart-7: #F97316;
+  --color-chart-8: #6366F1;
+  
+  /* Heatmap Color Scale */
+  --color-heatmap-0: #F5F5F0;
+  --color-heatmap-1: #D1E7DD;
+  --color-heatmap-2: #A3D5C0;
+  --color-heatmap-3: #6DC5A3;
+  --color-heatmap-4: #40B080;
+  --color-heatmap-5: #2D6A4F;
+  
+  /* RFM Colors */
+  --color-rfm-champions: #2D6A4F;
+  --color-rfm-loyal: #40B080;
+  --color-rfm-potential: #4A90D9;
+  --color-rfm-new: #14B8A6;
+  --color-rfm-promising: #8B5CF6;
+  --color-rfm-needs-attention: #E8A317;
+  --color-rfm-about-to-sleep: #F97316;
+  --color-rfm-at-risk: #EA580C;
+  --color-rfm-cant-lose: #C62828;
+  --color-rfm-hibernating: #9CA3AF;
+  --color-rfm-lost: #6B7280;
+
+  --font-sans: var(--font-inter), 'Inter', sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Base Skeleton Loading Shimmer Keyframes */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #EBEBE6 25%, #F0F0EB 50%, #EBEBE6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+    background: #EBEBE6;
+  }
+}

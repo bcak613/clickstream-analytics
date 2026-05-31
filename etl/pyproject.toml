@@ -1,0 +1,8 @@
+[project]
+name = "clickstream-etl"
+version = "0.1.0"
+description = "Clickstream Analytics ETL Pipeline"
+dependencies = [
+    "polars>=1.41.0",
+    "duckdb>=1.5.0",
+]
