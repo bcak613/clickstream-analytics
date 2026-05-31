@@ -14,7 +14,32 @@ def run_stage_2():
         
     print(f"Loading raw Parquet lazily from: {config.RAW_PARQUET_PATH}")
     lf = pl.scan_parquet(config.RAW_PARQUET_PATH)
-    
+
+    # --------------------------------------------------
+    # DATA QUALITY: Cast event_time to Datetime & filter
+    # --------------------------------------------------
+    # FIX 1: Ép kiểu event_time từ String → Datetime với timezone UTC
+    #         Nếu để String, .min()/.max() so sánh lexicographic thay vì chronological.
+    #         Polars tự raise lỗi nếu format không đúng → phát hiện format lẫn lộn sớm.
+    lf = lf.with_columns([
+        pl.col("event_time")
+          .str.to_datetime(format="%Y-%m-%d %H:%M:%S %Z", strict=False, use_earliest=True)
+          .alias("event_time")
+    ])
+
+    # FIX 2: Lọc bỏ bản ghi có price âm hoặc bằng 0 (lỗi hệ thống TMDT)
+    #         Chỉ áp dụng cho sự kiện purchase — view/cart không nhất thiết cần price > 0
+    lf = lf.filter(
+        (pl.col("event_type") != "purchase") | (pl.col("price") > 0)
+    )
+
+    # FIX 3: Loại trùng lặp click đúp / Bot traffic trong fact_events
+    #         Hai sự kiện giống hệt nhau (cùng user, session, product, event_type, giây) → giữ 1
+    lf = lf.unique(
+        subset=["user_id", "user_session", "product_id", "event_type", "event_time"],
+        keep="first"
+    )
+
     # Ensure warehouse directory exists
     os.makedirs(config.WAREHOUSE_DIR, exist_ok=True)
     
@@ -23,10 +48,8 @@ def run_stage_2():
     # --------------------------------------------------
     print("Normalizing dim_categories...")
     
-    # Get unique combinations of category_id and category_code
     categories_df = lf.select(["category_id", "category_code"]).unique(subset=["category_id"]).collect()
     
-    # Split category_code hierarchy: split on '.' and take up to 2 levels
     categories_df = categories_df.with_columns([
         pl.col("category_code").fill_null("unknown").alias("category_code_filled")
     ]).with_columns([
@@ -43,7 +66,7 @@ def run_stage_2():
     # --------------------------------------------------
     print("Normalizing dim_users...")
     
-    # Group by user_id to compute first_seen (min event_time) and session_count (n_unique user_session)
+    # first_seen giờ so sánh đúng vì event_time đã là Datetime
     users_df = lf.group_by("user_id").agg([
         pl.col("event_time").min().alias("first_seen"),
         pl.col("user_session").n_unique().alias("session_count")
@@ -58,25 +81,34 @@ def run_stage_2():
     # --------------------------------------------------
     print("Normalizing dim_products (SCD Type 2 Price Tracking)...")
     
-    # Get product references (product_id, brand, category_id, price, event_time)
-    # Group by product_id, brand, category_id, and price to find valid_from (min event_time)
     products_raw = lf.select(["product_id", "brand", "category_id", "price", "event_time"])
     
-    # Fill brand nulls with 'unknown'
     products_raw = products_raw.with_columns([
         pl.col("brand").fill_null("unknown")
     ])
     
+    # FIX 4: Dedup log rác cùng mức giá trước khi group_by → tránh sinh dòng SCD thừa
+    #         Ví dụ: cùng product_id + price xuất hiện 100 lần trong cùng ngày → chỉ giữ min event_time
     products_scd = products_raw.group_by(["product_id", "brand", "category_id", "price"]).agg([
         pl.col("event_time").min().alias("valid_from")
     ]).sort(["product_id", "valid_from"])
     
-    # Collect to compute valid_to using shift
     products_scd_df = products_scd.collect()
+
+    # Sau khi sort, loại bỏ các dòng có cùng product_id + price liên tiếp (SCD fragment thừa)
+    # trước khi dùng shift để tính valid_to
+    products_scd_df = products_scd_df.unique(
+        subset=["product_id", "price"],
+        keep="first"
+    ).sort(["product_id", "valid_from"])
     
-    # valid_to is the next price's valid_from. For the latest price, set to 2099 far-future
+    # valid_to = valid_from của dòng kế tiếp. Dòng cuối cùng (giá hiện tại) = far future
     products_scd_df = products_scd_df.with_columns([
-        pl.col("valid_from").shift(-1).over("product_id").fill_null("2099-12-31 23:59:59 UTC").alias("valid_to")
+        pl.col("valid_from")
+          .shift(-1)
+          .over("product_id")
+          .fill_null(pl.lit("2099-12-31").str.to_datetime(format="%Y-%m-%d"))
+          .alias("valid_to")
     ])
     
     products_path = os.path.join(config.WAREHOUSE_DIR, "dim_products.parquet")
@@ -88,8 +120,6 @@ def run_stage_2():
     # --------------------------------------------------
     print("Normalizing fact_events...")
     
-    # The fact events contains foreign keys to dimension tables, plus timestamps and event types.
-    # We select event_time, event_type, product_id, category_id, user_id, and user_session.
     facts_df = lf.select([
         "event_time",
         "event_type",
