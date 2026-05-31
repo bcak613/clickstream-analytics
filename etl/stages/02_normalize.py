@@ -14,39 +14,14 @@ def run_stage_2():
         
     print(f"Loading raw Parquet lazily from: {config.RAW_PARQUET_PATH}")
     lf = pl.scan_parquet(config.RAW_PARQUET_PATH)
-
-    # --------------------------------------------------
-    # DATA QUALITY: Cast event_time to Datetime & filter
-    # --------------------------------------------------
-    # FIX 1: Ép kiểu event_time từ String → Datetime với timezone UTC
-    #         Nếu để String, .min()/.max() so sánh lexicographic thay vì chronological.
-    #         Polars tự raise lỗi nếu format không đúng → phát hiện format lẫn lộn sớm.
-    lf = lf.with_columns([
-        pl.col("event_time")
-          .str.to_datetime(format="%Y-%m-%d %H:%M:%S %Z", strict=False, use_earliest=True)
-          .alias("event_time")
-    ])
-
-    # FIX 2: Lọc bỏ bản ghi có price âm hoặc bằng 0 (lỗi hệ thống TMDT)
-    #         Chỉ áp dụng cho sự kiện purchase — view/cart không nhất thiết cần price > 0
-    lf = lf.filter(
-        (pl.col("event_type") != "purchase") | (pl.col("price") > 0)
-    )
-
-    # FIX 3: Loại trùng lặp click đúp / Bot traffic trong fact_events
-    #         Hai sự kiện giống hệt nhau (cùng user, session, product, event_type, giây) → giữ 1
-    lf = lf.unique(
-        subset=["user_id", "user_session", "product_id", "event_type", "event_time"],
-        keep="first"
-    )
-
+    
     # Ensure warehouse directory exists
     os.makedirs(config.WAREHOUSE_DIR, exist_ok=True)
     
     # --------------------------------------------------
     # 1. Normalize Categories Table (dim_categories)
     # --------------------------------------------------
-    print("Normalizing dim_categories...")
+    print("[1/4] dim_categories...")
     
     categories_df = lf.select(["category_id", "category_code"]).unique(subset=["category_id"]).collect()
     
@@ -59,14 +34,13 @@ def run_stage_2():
     
     categories_path = os.path.join(config.WAREHOUSE_DIR, "dim_categories.parquet")
     categories_df.write_parquet(categories_path, compression="snappy")
-    print(f"Written dim_categories: {categories_df.height} rows")
+    print(f"    -> {categories_df.height:,} rows  ({time.time()-start_time:.1f}s)")
     
     # --------------------------------------------------
     # 2. Normalize Users Table (dim_users)
     # --------------------------------------------------
-    print("Normalizing dim_users...")
+    print("[2/4] dim_users...")
     
-    # first_seen giờ so sánh đúng vì event_time đã là Datetime
     users_df = lf.group_by("user_id").agg([
         pl.col("event_time").min().alias("first_seen"),
         pl.col("user_session").n_unique().alias("session_count")
@@ -74,53 +48,48 @@ def run_stage_2():
     
     users_path = os.path.join(config.WAREHOUSE_DIR, "dim_users.parquet")
     users_df.write_parquet(users_path, compression="snappy")
-    print(f"Written dim_users: {users_df.height} rows")
+    print(f"    -> {users_df.height:,} rows  ({time.time()-start_time:.1f}s)")
     
     # --------------------------------------------------
     # 3. Normalize Products Table (dim_products - SCD Type 2)
     # --------------------------------------------------
-    print("Normalizing dim_products (SCD Type 2 Price Tracking)...")
+    print("[3/4] dim_products (SCD Type 2)...")
     
     products_raw = lf.select(["product_id", "brand", "category_id", "price", "event_time"])
-    
     products_raw = products_raw.with_columns([
         pl.col("brand").fill_null("unknown")
     ])
     
-    # FIX 4: Dedup log rác cùng mức giá trước khi group_by → tránh sinh dòng SCD thừa
-    #         Ví dụ: cùng product_id + price xuất hiện 100 lần trong cùng ngày → chỉ giữ min event_time
     products_scd = products_raw.group_by(["product_id", "brand", "category_id", "price"]).agg([
         pl.col("event_time").min().alias("valid_from")
     ]).sort(["product_id", "valid_from"])
     
     products_scd_df = products_scd.collect()
 
-    # Sau khi sort, loại bỏ các dòng có cùng product_id + price liên tiếp (SCD fragment thừa)
-    # trước khi dùng shift để tính valid_to
+    # FIX: Dedup same product+price fragments trước shift
+    # Tránh SCD sinh dòng phân mảnh thừa khi giá không đổi
     products_scd_df = products_scd_df.unique(
         subset=["product_id", "price"],
         keep="first"
     ).sort(["product_id", "valid_from"])
     
-    # valid_to = valid_from của dòng kế tiếp. Dòng cuối cùng (giá hiện tại) = far future
     products_scd_df = products_scd_df.with_columns([
-        pl.col("valid_from")
-          .shift(-1)
-          .over("product_id")
-          .fill_null(pl.lit("2099-12-31").str.to_datetime(format="%Y-%m-%d"))
-          .alias("valid_to")
+        pl.col("valid_from").shift(-1).over("product_id").fill_null("2099-12-31 23:59:59 UTC").alias("valid_to")
     ])
     
     products_path = os.path.join(config.WAREHOUSE_DIR, "dim_products.parquet")
     products_scd_df.write_parquet(products_path, compression="snappy")
-    print(f"Written dim_products (SCD Type 2): {products_scd_df.height} rows")
+    print(f"    -> {products_scd_df.height:,} rows  ({time.time()-start_time:.1f}s)")
     
     # --------------------------------------------------
     # 4. Normalize Fact Events Table (fact_events)
     # --------------------------------------------------
-    print("Normalizing fact_events...")
+    print("[4/4] fact_events...")
     
-    facts_df = lf.select([
+    # FIX: Lọc purchase có price <= 0 (lỗi hệ thống TMDT phổ biến)
+    facts_df = lf.filter(
+        (pl.col("event_type") != "purchase") | (pl.col("price") > 0)
+    ).select([
         "event_time",
         "event_type",
         "product_id",
@@ -131,10 +100,10 @@ def run_stage_2():
     
     facts_path = os.path.join(config.WAREHOUSE_DIR, "fact_events.parquet")
     facts_df.write_parquet(facts_path, compression="snappy")
-    print(f"Written fact_events: {facts_df.height} rows")
+    print(f"    -> {facts_df.height:,} rows  ({time.time()-start_time:.1f}s)")
     
     elapsed = time.time() - start_time
-    print(f"Stage 2 Completed Successfully in {elapsed:.2f} seconds!")
+    print(f"\nStage 2 Completed in {elapsed:.1f}s")
     print("==================================================\n")
 
 if __name__ == "__main__":
