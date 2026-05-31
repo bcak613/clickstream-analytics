@@ -1,5 +1,7 @@
 # Clickstream Analytics Platform
 
+**Live Demo:** https://dashboard-delta-ten-67.vercel.app
+
 Nền tảng phân tích hành vi người dùng thương mại điện tử dựa trên dữ liệu clickstream 68 triệu sự kiện (Oct–Nov 2019). Toàn bộ xử lý dữ liệu chạy trên máy local bằng Polars + DuckDB, dashboard chạy hoàn toàn trên trình duyệt thông qua DuckDB-WASM — không cần server, không cần database.
 
 ---

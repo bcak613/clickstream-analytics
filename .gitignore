@@ -19,6 +19,10 @@ etl/data/warehouse/
 .agent/
 _bmad/
 _bmad-output/
+CLAUDE.md
+AGENTS.md
+dashboard/CLAUDE.md
+dashboard/AGENTS.md
 
 # =============================================================================
 # Python
