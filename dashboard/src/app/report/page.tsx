@@ -281,13 +281,21 @@ export default function ReportPage() {
 
             <Insight title={t('Nhận định phân tích', 'Analysis Findings')}>
               <Bullet text={t(
-                `Đỉnh doanh thu rơi vào ngày ${peakDay.event_date}, đạt ${fmtUSD(peakDay.daily_revenue)} — gấp ${peakRatio.toFixed(1)} lần mức trung bình ngày thường (~${fmtUSD(median)}). Đây nhiều khả năng là sự kiện siêu sale 11.11 (Ngày Độc Thân).`,
-                `Revenue peaked on ${peakDay.event_date} at ${fmtUSD(peakDay.daily_revenue)}, which is ${peakRatio.toFixed(1)}x above the daily median (~${fmtUSD(median)}). This is most likely the 11.11 Singles Day flash sale event.`
+                `Đỉnh doanh thu rơi vào ngày ${peakDay.event_date} (Chủ nhật), đạt ${fmtUSD(peakDay.daily_revenue)} — gấp ${peakRatio.toFixed(1)} lần mức trung bình ngày thường (~${fmtUSD(median)}). Dataset này xuất phát từ sàn TMDT điện tử tại Nga (Oct–Nov 2019).`,
+                `Revenue peaked on ${peakDay.event_date} (Sunday) at ${fmtUSD(peakDay.daily_revenue)}, which is ${peakRatio.toFixed(1)}x above the daily median (~${fmtUSD(median)}). This dataset originates from a Russian electronics e-commerce store (Oct–Nov 2019).`
               )} />
+              <Bullet text={t(
+                'Khả năng cao nhất — Ngày cuối sale AliExpress 11.11: AliExpress (top 3 TMDT tại Nga) tổ chức Global Shopping Festival kéo dài từ 11/11 đến 17/11/2019 cho thị trường Nga và Đông Âu. Ngày 17/11 là Chủ nhật — ngày cuối đợt sale → rush mua vào phút chót.',
+                'Most likely cause — AliExpress 11.11 Final Day: AliExpress (top 3 e-commerce in Russia) ran its Global Shopping Festival from Nov 11–17, 2019 for the Russian and Eastern European market. Nov 17 being a Sunday — last day of the sale — triggered a last-minute purchase rush.'
+              )} accent="bg-green-500/60" />
+              <Bullet text={t(
+                'Yếu tố cộng hưởng — Hiệu ứng lương giữa tháng: Lương nhà nước và quân đội Nga được trả định kỳ ngày 15–20 mỗi tháng. Ngày 17/11 (Chủ nhật) ngay sau kỳ lương giữa tháng → purchasing power tăng đột biến trùng với ngày cuối sale.',
+                'Compounding factor — Mid-month payday effect: Russian government and military salaries are regularly disbursed on the 15th–20th of each month. Nov 17 (Sunday) falls right after mid-month payday — a confluence of increased purchasing power and sale deadline urgency.'
+              )} accent="bg-blue-500/60" />
               {lagConfirmed ? (
                 <Bullet text={t(
-                  `Xác nhận hiệu ứng Độ trễ mua hàng (Purchase Lag): lượt xem tại D-2 và D-3 trước đỉnh cao hơn trung bình ${lagPct}%. Khách hàng có xu hướng khảo giá và nghiên cứu sản phẩm 2–3 ngày trước, rồi đồng loạt chốt đơn vào ngày cao điểm.`,
-                  `Purchase lag effect confirmed: view traffic at D-2 and D-3 before peak was ${lagPct}% above median. Customers tend to browse and compare prices 2–3 days ahead, then make synchronized purchases on the peak day.`
+                  `Xác nhận hiệu ứng Độ trễ mua hàng (Purchase Lag): lượt xem tại D-2 và D-3 trước đỉnh cao hơn trung bình ${lagPct}%. Hành vi khảo giá và nghiên cứu sản phẩm 2–3 ngày trước, rồi đồng loạt chốt đơn vào ngày cao điểm — điển hình của rush cuối kỳ sale có thời hạn.`,
+                  `Purchase lag confirmed: view traffic at D-2 and D-3 before peak was ${lagPct}% above median. Browse-and-research behavior 2–3 days ahead, then synchronized purchases on the deadline day — textbook behavior for time-limited sale events.`
                 )} accent="bg-green-500/60" />
               ) : (
                 <Bullet text={t(
