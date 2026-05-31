@@ -244,8 +244,8 @@ export default function SalesTrendsPage() {
 
       {/* Main Revenue Area Chart */}
       <ContentCard 
-        title="Revenue & Order Frequency Over Time" 
-        subtitle={`Continuous monitoring of absolute transactions and transactional value (${timeResolution === 'daily' ? 'Daily' : 'Weekly'} basis)`}
+        title={t('Doanh thu & Tần suất Đơn hàng theo Thời gian', 'Revenue & Order Frequency Over Time')} 
+        subtitle={t(`Theo dõi liên tục giá trị giao dịch tuyệt đối (cơ sở ${timeResolution === 'daily' ? 'Hằng ngày' : 'Hằng tuần'})`, `Continuous monitoring of absolute transactions and transactional value (${timeResolution === 'daily' ? 'Daily' : 'Weekly'} basis)`)}
         className="w-full"
       >
         <div className={`h-[350px] w-full mt-2 transition-opacity duration-150 ${isQuerying ? 'opacity-50' : 'opacity-100'}`}>
@@ -289,15 +289,15 @@ export default function SalesTrendsPage() {
                         <p className="font-bold border-b border-outline-variant/20 pb-1 mb-1">{data.event_date}</p>
                         <div className="space-y-1">
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Revenue:</span>
+                            <span className="text-on-surface-variant/80">{t('Doanh thu:', 'Revenue:')}</span>
                             <span className="font-semibold text-primary">{formatCurrency(data.daily_revenue)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Purchases:</span>
+                            <span className="text-on-surface-variant/80">{t('Lượt mua:', 'Purchases:')}</span>
                             <span className="font-semibold text-tertiary">{formatNumber(data.purchase_count)}</span>
                           </p>
                           <p className="flex justify-between gap-6">
-                            <span className="text-on-surface-variant/80">Conversions:</span>
+                            <span className="text-on-surface-variant/80">{t('Tỷ lệ chuyển đổi:', 'Conversions:')}</span>
                             <span className="font-semibold">{formatPercent(data.conversion_rate)}</span>
                           </p>
                         </div>
@@ -332,15 +332,27 @@ export default function SalesTrendsPage() {
           if (spikeRatio > 3) {
             insights.push({
               type: 'warning' as const,
-              title: `Revenue spike detected on ${maxRevDay.event_date} — ${spikeRatio.toFixed(1)}x above median`,
-              body: `This ${spikeRatio.toFixed(0)}x spike is consistent with a major promotional event (e.g. 11.11 Singles Day, flash sale). Validate that the SCD Type 2 price join is not inflating purchase values during this window — then leverage this as a benchmark for planning future campaign budgets.`
+              title: t(
+                `Phát hiện đột biến doanh thu ngày ${maxRevDay.event_date} — gấp ${spikeRatio.toFixed(1)}x so với trung bình`,
+                `Revenue spike detected on ${maxRevDay.event_date} — ${spikeRatio.toFixed(1)}x above median`
+              ),
+              body: t(
+                `Đột biến ${spikeRatio.toFixed(0)}x này tương thích với sự kiện siêu sale lớn (AliExpress 11.11 kéo dài đến 17/11 cho thị trường Nga + hiệu ứng lương giữa tháng). Kiểm tra join giá SCD Type 2 không làm phồng giá trị đơn hàng trong khoảng thời gian này.`,
+                `This ${spikeRatio.toFixed(0)}x spike is consistent with a major promotional event (AliExpress 11.11 extended to Nov 17 in Russia + mid-month payday effect). Validate that the SCD Type 2 price join is not inflating purchase values during this window.`
+              )
             });
           }
           const avgConv = dailySales.reduce((acc, d) => acc + (d.conversion_rate || 0), 0) / dailySales.length;
           insights.push({
             type: 'insight' as const,
-            title: `Average daily conversion rate: ${(avgConv * 100).toFixed(2)}% over the period`,
-            body: `E-commerce industry benchmark is 1–3%. ${avgConv >= 0.01 ? 'You are within or above the benchmark — focus on increasing AOV rather than volume.' : 'Below benchmark — prioritize friction removal in the checkout funnel and A/B test product page CTAs.'}`
+            title: t(
+              `Tỷ lệ chuyển đổi trung bình hàng ngày: ${(avgConv * 100).toFixed(2)}% trong kỳ`,
+              `Average daily conversion rate: ${(avgConv * 100).toFixed(2)}% over the period`
+            ),
+            body: t(
+              `Chuẩn ngành TMDT là 1–3%. ${avgConv >= 0.01 ? 'Nằm trong hoặc vượt chuẩn — tập trung tăng AOV thay vì volume.' : 'Dưới chuẩn — ưu tiên loại bỏ ma sát trong quy trình thanh toán và A/B test CTA trang sản phẩm.'}`,
+              `E-commerce industry benchmark is 1–3%. ${avgConv >= 0.01 ? 'You are within or above the benchmark — focus on increasing AOV rather than volume.' : 'Below benchmark — prioritize friction removal in the checkout funnel and A/B test product page CTAs.'}`
+            )
           });
           return <InsightCallout insights={insights} />;
         })()}
@@ -351,8 +363,8 @@ export default function SalesTrendsPage() {
         
         {/* Horizontal Conversion Funnel Card */}
         <ContentCard 
-          title="Checkout Event Funnel" 
-          subtitle="Complete tracking of user transition volume and drop-off ratios"
+          title={t('Phễu Chuyển đổi (Checkout Funnel)', 'Checkout Event Funnel')} 
+          subtitle={t('Theo dõi toàn bộ volume chuyển tiếp và tỷ lệ rời bỏ', 'Complete tracking of user transition volume and drop-off ratios')}
         >
           <div className="flex flex-col justify-center h-[260px] py-4 space-y-5">
             {/* Views Row */}
@@ -360,7 +372,7 @@ export default function SalesTrendsPage() {
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-on-surface flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-primary/20 border border-primary"></span>
-                  Product Views
+                  {t('Lượt Xem Sản phẩm', 'Product Views')}
                 </span>
                 <span className="text-on-surface-variant">{formatNumber(totalViews)}</span>
               </div>
@@ -374,12 +386,12 @@ export default function SalesTrendsPage() {
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-on-surface flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-tertiary/20 border border-tertiary"></span>
-                  Cart Additions
+                  {t('Thêm vào Giỏ hàng', 'Cart Additions')}
                 </span>
                 <span className="text-on-surface-variant flex items-center gap-2">
                   {formatNumber(totalCarts)}
                   <span className="text-[10px] bg-error-container text-error px-2 py-0.5 rounded-full font-bold">
-                    -{formatPercent(cartDropoff)} Drop
+                    -{formatPercent(cartDropoff)} {t('Rời bỏ', 'Drop')}
                   </span>
                 </span>
               </div>
@@ -396,12 +408,12 @@ export default function SalesTrendsPage() {
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-on-surface flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#E8A317]/20 border border-[#E8A317]"></span>
-                  Purchases Completed
+                  {t('Đơn hàng Hoàn thành', 'Purchases Completed')}
                 </span>
                 <span className="text-on-surface-variant flex items-center gap-2">
                   {formatNumber(totalPurchases)}
                   <span className="text-[10px] bg-error-container text-error px-2 py-0.5 rounded-full font-bold">
-                    -{formatPercent(purchaseDropoff)} Drop
+                    -{formatPercent(purchaseDropoff)} {t('Rời bỏ', 'Drop')}
                   </span>
                 </span>
               </div>
@@ -415,7 +427,7 @@ export default function SalesTrendsPage() {
 
             {/* Overall Conversion Indicator */}
             <div className="pt-2 border-t border-outline-variant/30 flex items-center justify-between">
-              <span className="text-xs font-bold text-on-surface-variant/80 uppercase">Overall Ingestion-to-Purchase Conversion</span>
+              <span className="text-xs font-bold text-on-surface-variant/80 uppercase">{t('Tổng tỷ lệ Xem → Mua', 'Overall Ingestion-to-Purchase Conversion')}</span>
               <span className="text-sm font-extrabold text-primary flex items-center gap-1">
                 <TrendingUp className="w-4 h-4" />
                 {formatPercent(overallConversion)}
@@ -425,23 +437,37 @@ export default function SalesTrendsPage() {
           <InsightCallout insights={[
             {
               type: purchaseDropoff > 0.80 ? 'warning' : 'insight',
-              title: `Cart-to-purchase drop-off is ${formatPercent(purchaseDropoff)} — ${purchaseDropoff > 0.80 ? 'critically high' : 'within normal range'}`,
-              body: purchaseDropoff > 0.80
-                ? 'Over 80% of users abandon cart before completing payment. Immediate actions: (1) Add persistent cart reminders via email/push, (2) Review payment gateway friction and add local payment methods, (3) Show trust signals (reviews, return policy) at checkout.'
-                : 'Cart abandonment is within acceptable range. Focus on growing top-of-funnel traffic and repeat purchase rates through loyalty programs.'
+              title: t(
+                `Tỷ lệ rời giỏ hàng trước khi thanh toán: ${formatPercent(purchaseDropoff)} — ${purchaseDropoff > 0.80 ? 'rất cao' : 'trong ngưỡng bình thường'}`,
+                `Cart-to-purchase drop-off is ${formatPercent(purchaseDropoff)} — ${purchaseDropoff > 0.80 ? 'critically high' : 'within normal range'}`
+              ),
+              body: t(
+                purchaseDropoff > 0.80
+                  ? 'Hơn 80% người dùng bỏ giỏ hàng trước khi hoàn tất thanh toán. Hành động ngay: (1) Thêm nhắc nhở giỏ hàng qua email/push, (2) Kiểm tra ma sát cng thanh toán và bổ sung phương thức thanh toán địa phương, (3) Hiển thị tín hiệu tin tưởng tại trang thanh toán.'
+                  : 'Tỷ lệ bỏ giỏ hàng trong mức chấp nhận được. Tập trung tăng trưởng traffic top-of-funnel và tỷ lệ mua lại qua chương trình khách hàng thân thiết.',
+                purchaseDropoff > 0.80
+                  ? 'Over 80% of users abandon cart before completing payment. Immediate actions: (1) Add persistent cart reminders via email/push, (2) Review payment gateway friction and add local payment methods, (3) Show trust signals (reviews, return policy) at checkout.'
+                  : 'Cart abandonment is within acceptable range. Focus on growing top-of-funnel traffic and repeat purchase rates through loyalty programs.'
+              )
             },
             {
               type: 'strategy',
-              title: 'Strategy: Retarget cart abandoners within 1-hour window',
-              body: `${formatPercent(cartDropoff)} of visitors who add to cart never checkout. Implement automated abandoned cart recovery emails at 1h, 24h, and 72h post-abandonment with a time-limited 5–10% discount. Industry average recovery rate: 5–15% of abandoned carts.`
+              title: t(
+                'Chiến lược: Bám đuổi khách bỏ giỏ trong vòng 1 giờ',
+                'Strategy: Retarget cart abandoners within 1-hour window'
+              ),
+              body: t(
+                `${formatPercent(cartDropoff)} người dùng thêm vào giỏ nhưng không mua. Triển khai email tự động khôi phục giỏ hàng sau 1h, 24h, 72h kèm ưu đãi có thời hạn 5–10%. Tỷ lệ khôi phục trung bình ngành: 5–15%.`,
+                `${formatPercent(cartDropoff)} of visitors who add to cart never checkout. Implement automated abandoned cart recovery emails at 1h, 24h, and 72h post-abandonment with a time-limited 5–10% discount. Industry average recovery rate: 5–15% of abandoned carts.`
+              )
             }
           ]} />
         </ContentCard>
 
         {/* Lag Distribution Card */}
         <ContentCard 
-          title="Browsing-to-Purchase Latency" 
-          subtitle="Duration interval from first view to absolute transaction (same session)"
+          title={t('Độ trễ Duyệt → Mua (Browsing Latency)', 'Browsing-to-Purchase Latency')} 
+          subtitle={t('Khoảng thời gian từ lượt xem đầu đến giao dịch hoàn thành (cùng phiên)', 'Duration interval from first view to absolute transaction (same session)')}
         >
           <div className="h-[230px] w-full mt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -468,15 +494,15 @@ export default function SalesTrendsPage() {
                           <p className="font-bold border-b border-outline-variant/20 pb-1 mb-1">Bucket: {data.lag_bucket}</p>
                           <div className="space-y-1">
                             <p className="flex justify-between gap-6">
-                              <span className="text-on-surface-variant/80">Purchases:</span>
+                              <span className="text-on-surface-variant/80">{t('Lượt mua:', 'Purchases:')}</span>
                               <span className="font-semibold text-primary">{formatNumber(data.lag_count)}</span>
                             </p>
                             <p className="flex justify-between gap-6">
-                              <span className="text-on-surface-variant/80">Mean Latency:</span>
+                              <span className="text-on-surface-variant/80">{t('Độ trễ trung bình:', 'Mean Latency:')}</span>
                               <span className="font-semibold">{formatTime(data.mean_lag)}</span>
                             </p>
                             <p className="flex justify-between gap-6">
-                              <span className="text-on-surface-variant/80">Median Latency:</span>
+                              <span className="text-on-surface-variant/80">{t('Độ trễ trung vị:', 'Median Latency:')}</span>
                               <span className="font-semibold text-tertiary">{formatTime(data.median_lag)}</span>
                             </p>
                           </div>
@@ -501,7 +527,7 @@ export default function SalesTrendsPage() {
           {lags.length > 0 && (
             <div className="mt-3 flex items-center justify-between border-t border-outline-variant/30 pt-2 text-[11px] font-bold text-on-surface-variant uppercase">
               <span className="flex items-center gap-1 text-on-surface-variant">
-                <Clock className="w-4 h-4 text-primary" /> Average session lag:
+                <Clock className="w-4 h-4 text-primary" /> {t('Độ trễ phiên trung bình:', 'Average session lag:')}
               </span>
               <span className="text-on-surface text-xs font-extrabold lowercase">
                 ~ {formatTime(lags[0].mean_lag)}
@@ -515,8 +541,14 @@ export default function SalesTrendsPage() {
             return (
               <InsightCallout insights={[{
                 type: 'strategy',
-                title: `${(fastPct * 100).toFixed(0)}% of purchases happen within 5 minutes of first view`,
-                body: `Impulse buying is dominant. Ensure product pages load in <2s and checkout is frictionless for mobile. ${slowBucket ? `The ${slowBucket.lag_count.toLocaleString()} customers who take 1h+ are likely price-comparing — target them with a real-time "only X left" urgency indicator.` : ''}`
+                title: t(
+                  `${(fastPct * 100).toFixed(0)}% giao dịch xảy ra trong vòng 5 phút đầu tiên`,
+                  `${(fastPct * 100).toFixed(0)}% of purchases happen within 5 minutes of first view`
+                ),
+                body: t(
+                  `Mua sắm thạo túc (Impulse Buying) chiếm ưu thế. Đảm bảo trang sản phẩm tải trong <2s và checkout không ma sát trên mobile. ${slowBucket ? `${slowBucket.lag_count.toLocaleString()} khách hàng mất hơn 1h là nhóm so sánh giá — nhắm mục tiêu bằng thông báo “chỉ còn X sản phẩm” đời thực.` : ''}`,
+                  `Impulse buying is dominant. Ensure product pages load in <2s and checkout is frictionless for mobile. ${slowBucket ? `The ${slowBucket.lag_count.toLocaleString()} customers who take 1h+ are likely price-comparing — target them with a real-time "only X left" urgency indicator.` : ''}`
+                )
               }]} />
             );
           })()}
